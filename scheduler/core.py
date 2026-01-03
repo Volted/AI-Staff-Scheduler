@@ -34,7 +34,7 @@ def generate_schedule(tasks_data: List[dict], employees_data: List[dict], schedu
                 selected.append(emp.employee_id)
                 assigned_employees.add(emp.employee_id)
 
-        # Fill remaining with the best available (preference match + fairness)
+        # Fill the remaining with the best available (preference match + fairness)
         for emp in sorted(candidates, key=lambda e: (
             -e.preferences.index(task.category) if task.category in e.preferences else 999,
             -e.denied_requests_60_days,
@@ -52,7 +52,7 @@ def generate_schedule(tasks_data: List[dict], employees_data: List[dict], schedu
     remaining_employees = [e for e in employees if e.employee_id not in assigned_employees]
     # Optional: assign some to vacation based on fairness
     # For now, leave unassigned = off / available for vacation if needed
-    # But since a vacation task exists, we can assign remaining if we want "off" as vacation
+    # But since a vacation task exists, we can assign remaining if we want "off" as vacation,
     # According to the updated rule: vacation is exclusive, but not mandatory
     assignments[0] = []  # or assign some based on a need
 
