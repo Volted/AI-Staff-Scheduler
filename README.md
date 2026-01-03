@@ -80,20 +80,31 @@ python main.py --tasks tasks.json --employees employees.json --date 2026-01-03 -
 ```json
 [
   {
-    "task_id": "task001",
-    "category": "sales",
+    "task_id": 12,
+    "category": 3,
     "customer_capacity": 30,
     "required_capacity_per_staff": 6, 
-    "required_certifications": ["cert_sales_basic"],
-    "duration": "full_day"  
+    "required_certifications": [1,3,5],
+    "start": "2026-01-03 08:00:00",
+    "end": "2026-01-03 09:00:00"
   },
   {
-    "task_id": "vacation",
-    "category": "vacation",
+    "task_id": 356,
+    "category": 3,
+    "customer_capacity": 12,
+    "required_capacity_per_staff": 6, 
+    "required_certifications": [2,4],
+    "start": "2026-01-03 10:00:00",
+    "end": "2026-01-03 11:00:00" 
+  },
+  {
+    "task_id": 0,
+    "category": 0,
     "customer_capacity": 0,
     "required_capacity_per_staff": 1,
     "required_certifications": [],
-    "duration": "all_day"
+    "start": "2026-01-03 08:00:00",
+    "end": "2026-01-03 16:00:00" 
   }
 ]
 ```
@@ -102,11 +113,10 @@ python main.py --tasks tasks.json --employees employees.json --date 2026-01-03 -
 ```json
 [
   {
-    "employee_id": "emp001",
+    "employee_id": 65223,
     "name": "John Doe",
-    "preferences": ["sales", "vacation"],  
-    "current_day_preferences": ["sales"],
-    "certifications": ["cert_sales_basic", "cert_management"],
+    "preferences": [3],
+    "certifications": [1,2,3,5],
     "previous_vacations_60_days": 5, 
     "approved_requests_60_days": 8,
     "denied_requests_60_days": 2
