@@ -1,9 +1,9 @@
 from typing import List, Dict
-from loguru import logger
-from .models import Task, Employee, Assignment, Schedule
-from .validators import has_required_certs, needed_staff, tasks_overlap
 from .ai_agent import get_grok_suggestion
-from datetime import date
+from .models import Task, Employee, Assignment, Schedule
+from .utils import parse_datetime
+from .validators import has_required_certs, needed_staff
+
 
 def generate_schedule(tasks_data: List[dict], employees_data: List[dict], schedule_date: str, country: str = "US") -> Schedule:
     tasks = [Task(**t, start=parse_datetime(t["start"]), end=parse_datetime(t["end"])) for t in tasks_data]
@@ -14,7 +14,7 @@ def generate_schedule(tasks_data: List[dict], employees_data: List[dict], schedu
     # Get AI suggestion
     suggested = get_grok_suggestion(tasks, employees)
 
-    # Validate and fallback with greedy assignment
+    # Validate and fallback with a greedy assignment
     assignments: Dict[int, List[int]] = {t.task_id: [] for t in tasks}
     assigned_employees = set()
 
@@ -34,7 +34,7 @@ def generate_schedule(tasks_data: List[dict], employees_data: List[dict], schedu
                 selected.append(emp.employee_id)
                 assigned_employees.add(emp.employee_id)
 
-        # Fill remaining with best available (preference match + fairness)
+        # Fill remaining with the best available (preference match + fairness)
         for emp in sorted(candidates, key=lambda e: (
             -e.preferences.index(task.category) if task.category in e.preferences else 999,
             -e.denied_requests_60_days,
@@ -52,9 +52,9 @@ def generate_schedule(tasks_data: List[dict], employees_data: List[dict], schedu
     remaining_employees = [e for e in employees if e.employee_id not in assigned_employees]
     # Optional: assign some to vacation based on fairness
     # For now, leave unassigned = off / available for vacation if needed
-    # But since vacation task exists, we can assign remaining if we want "off" as vacation
-    # According to updated rule: vacation is exclusive, but not mandatory
-    assignments[0] = []  # or assign some based on need
+    # But since a vacation task exists, we can assign remaining if we want "off" as vacation
+    # According to the updated rule: vacation is exclusive, but not mandatory
+    assignments[0] = []  # or assign some based on a need
 
     schedule_assignments = [Assignment(task_id=tid, employee_ids=eids) for tid, eids in assignments.items()]
 
