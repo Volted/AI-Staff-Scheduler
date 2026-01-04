@@ -1,0 +1,16 @@
+[
+  {
+    "employee_id": 65223,
+    "name": "John Doe",
+    "preferences": [3],
+    "certifications": [1,2,3,5],
+    "previous_vacations_60_days": 5,
+    "approved_requests_60_days": 8,
+    "denied_requests_60_days": 2,
+    "vacation_days_remaining": 10,
+    "vacation_days_used": 5,
+    "worked_nights": 10,
+    "worked_weekends": 2,
+    "worked_holidays": 1
+  }
+]

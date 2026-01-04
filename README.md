@@ -1,206 +1,353 @@
-# AI-Staff-Scheduler
+# 🤖 AI Staff Scheduler
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-latest-green.svg)](https://fastapi.tiangolo.com/)
+
+An intelligent, **agentic AI** workforce scheduling system powered by **xAI's Grok** models. Specialized AI agents collaborate to generate fair, compliant, and optimized staff schedules for complex real-world constraints.
+
+---
+
+## Important Notice
+
+This is a personal side project developed independently in my free time. It has no connection to any employer or client work and does not contain or derive from any proprietary code.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Architecture](#architecture)
+- [Agent Roles](#agent-roles)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [API Reference](#api-reference)
+- [Data Models](#data-models)
+- [System Workflow](#system-workflow)
+- [Testing](#testing)
+- [Project Structure](#project-structure)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
 
 ## Overview
 
-AI-Staff-Scheduler is an agentic AI-powered staff scheduling module designed to automate the assignment of employees to daily tasks, including vacations, while ensuring fairness, compliance with business and legal requirements, and optimization based on employee preferences and qualifications. This project leverages xAI's Grok models through the public API to handle complex decision-making processes, such as balancing workloads, respecting vacation laws, and incorporating historical data for fair distribution.
+**AI Staff Scheduler** leverages **multi-agent architecture** with xAI's Grok to tackle complex scheduling challenges. Agents collaborate intelligently to:
 
-The system processes inputs like task lists (including a full-day vacation task), employee profiles, and task requirements. It uses AI to generate scheduling recommendations, validate them against constraints (e.g., certification matches, capacity needs, and legal vacation mandates), and output a fair task-to-staff mapping. The core logic is implemented in Python, with Grok API integration for agentic reasoning—such as interpreting preferences, resolving conflicts, and ensuring fairness over time.
+- Analyze requirements
+- Validate compliance
+- Generate optimal assignments
+- Review and refine results
 
-This module is ideal for businesses in sectors like retail, hospitality, healthcare, or logistics where dynamic staffing is crucial. It promotes employee satisfaction by considering preferences and historical approvals/ denials while maintaining operational efficiency.
+Built with **FastAPI** for a clean, async API and full interactive documentation.
+
+---
 
 ## Key Features
 
-- **Input Processing**: Handles lists of tasks and employees in JSON format, including details like preferences, certifications, historical vacations, and approval/denial rates.
-- **AI-Driven Assignment**: Uses xAI's Grok API to intelligently assign staff to tasks based on preferences, certifications, and fairness metrics.
-- **Vacation Management**: Includes a dedicated full-day vacation task; checks against country-specific labor laws (e.g., minimum vacation days, accrual rules) using web searches or predefined rules.
-- **Fairness and Equity**: Analyzes historical data (e.g., vacations over 60 days, approval/denial ratios) to ensure balanced distribution and prevent burnout or favoritism.
-- **Capacity Optimization**: Matches staff to tasks based on required capacity (e.g., one staffer per 6 customers) and customer demand.
-- **Legal Compliance**: Dynamically queries or references laws for vacations in the business's country (configurable).
-- **Output Generation**: Produces a schedule in JSON or human-readable format, with explanations for assignments.
-- **Extensibility**: Modular design allows for adding more AI agents (e.g., for conflict resolution) or integrating with calendars/HR systems.
-- **Error Handling and Validation**: Validates inputs, handles edge cases like insufficient staff, and provides fallback manual overrides.
+### 🧠 Multi-Agent Collaboration
+- Planner → Strategizes approach
+- Lawyer → Ensures legal/compliance rules
+- Scheduler → Creates optimized assignments
+- Reviewer → Quality assurance and scoring
 
-## Prerequisites and Dependencies
+### 🎯 Smart Scheduling
+- Certification matching
+- Workload balancing (nights, weekends, holidays)
+- Preference consideration
+- Conflict detection
+- Capacity management
 
-- **Python Version**: Python 3.8 or higher.
-- **xAI Grok API**: Requires an API key from xAI's public API (sign up at xAI's developer portal). The API is used for natural language processing and decision-making.
-- **Libraries**:
-  - `requests`: For API calls to xAI Grok.
-  - `json`: For handling input/output data.
-  - `datetime`: For date calculations (e.g., 60-day windows).
-  - `os` and `sys`: For file I/O and command-line interfaces.
-  - `pydantic`: For data validation and modeling (employee/task schemas).
-  - `loguru`: For logging.
-  - Optional: `pandas` for data analysis in reporting; `google-search` or similar for dynamic law queries (if not using predefined rules).
+### ⚖️ Compliance & Fairness
+- Labor law checks
+- Fair distribution
+- Vacation handling
+- Rest periods
+- Max hours enforcement
 
-Install dependencies via:
+### 🔄 Reliability
+- Fallback logic
+- Confidence scoring
+- Detailed logging
+- Error recovery
+
+---
+
+## Architecture
+
+Central orchestrator coordinates specialized agents:
+
+```mermaid
+graph TD
+    A[FastAPI Request] --> B[Orchestrator]
+    B --> C[Planner Agent]
+    B --> D[Executor]
+    D --> E[Lawyer Agent]
+    D --> F[Scheduler Agent]
+    B --> G[Reviewer Agent]
+    B --> H[Logger]
+    G --> I[Final Response]
 ```
-pip install requests pydantic loguru pandas
-```
+
+### Communication Flow
+1. Request → Orchestrator
+2. Planner creates execution plan
+3. Executor runs tools (Lawyer / Scheduler)
+4. Reviewer assesses quality
+5. Orchestrator curates response
+
+---
+
+## Agent Roles
+
+### Orchestrator (`orchestrator.py`)
+Coordinates workflow, aggregates results, handles fallbacks.
+
+### Planner Agent (`planner.py`)
+Analyzes complexity and creates step-by-step plan (low temperature for focus).
+
+### Executor (`executor.py`)
+Runs plan steps, calls tools, tracks metadata.
+
+### Lawyer Agent (`lawyer.py`)
+Validates constraints (certifications, overlaps, workload, vacations). Very precise (temperature 0.2).
+
+### Scheduler Agent (`scheduler.py`)
+Generates assignments with confidence scores. Balances creativity and consistency (temperature 0.5).
+
+### Reviewer Agent (`reviewer.py`)
+Evaluates coverage, fairness, compliance. Provides quality score (0-1).
+
+---
 
 ## Installation
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/AI-Staff-Scheduler.git
-   cd AI-Staff-Scheduler
-   ```
+### Prerequisites
+- Python 3.8+ (tested on 3.12+)
+- xAI API key (get at [x.ai/api](https://x.ai/api))
 
-2. Set up environment variables:
-   - Create a `.env` file in the root directory.
-   - Add your xAI Grok API key: `GROK_API_KEY=your_api_key_here`.
-   - Optionally, set `COUNTRY_CODE=US` for default labor law checks.
+```bash
+git clone https://github.com/pumasoft/ai-staff-scheduler.git
+cd ai-staff-scheduler
 
-3. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-4. Run tests:
-   ```
-   python -m unittest discover tests
-   ```
+pip install -r requirements.txt
+```
+
+Core dependencies:
+- fastapi
+- uvicorn
+- openai (>=1.51.0) — used for xAI compatibility
+- pydantic
+- loguru
+- python-dotenv
+
+---
+
+## Configuration
+
+Copy and edit `.env`:
+
+```bash
+cp .env.example .env
+```
+
+```env
+XAI_API_KEY=your_xai_api_key_here
+ENABLE_FILE_LOGGING=false
+LOG_LEVEL=INFO
+```
+
+---
 
 ## Usage
 
-### Command-Line Interface
-Run the scheduler with input files:
-```
-python main.py --tasks tasks.json --employees employees.json --date 2026-01-03 --country US
-```
-- `--tasks`: Path to JSON file with a task list.
-- `--employees`: Path to JSON file with an employee list.
-- `--date`: Scheduling date (YYYY-MM-DD).
-- `--country`: ISO country code for vacation laws (default: US).
-- Output: Generates `schedule.json` and logs explanations.
+### Run Server
 
-### Example Input Formats
+Development:
+```bash
+uvicorn main:app --reload
+```
 
-**tasks.json** (Array of tasks, including one vacation task):
+Production:
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+```
+
+API: http://localhost:8000  
+Docs: http://localhost:8000/docs (Swagger) / http://localhost:8000/redoc
+
+### Example Request (cURL)
+
+```bash
+curl -X POST "http://localhost:8000/schedule" \
+  -H "Content-Type: application/json" \
+  -d @data/sample_request.json
+```
+
+Sample data in `data/` folder.
+
+---
+
+## API Reference
+
+### POST /schedule
+
+**Request Body** (ScheduleRequest):
 ```json
-[
-  {
-    "task_id": 12,
-    "category": 3,
-    "customer_capacity": 30,
-    "required_capacity_per_staff": 6, 
-    "required_certifications": [1,3,5],
-    "start": "2026-01-03 08:00:00",
-    "end": "2026-01-03 09:00:00"
-  },
-  {
-    "task_id": 356,
-    "category": 3,
-    "customer_capacity": 12,
-    "required_capacity_per_staff": 6, 
-    "required_certifications": [2,4],
-    "start": "2026-01-03 10:00:00",
-    "end": "2026-01-03 11:00:00" 
-  },
-  {
-    "task_id": 0,
-    "category": 0,
-    "customer_capacity": 0,
-    "required_capacity_per_staff": 1,
-    "required_certifications": [],
-    "start": "2026-01-03 08:00:00",
-    "end": "2026-01-03 16:00:00" 
-  }
-]
+{
+  "employees": [/* array of Employee objects */],
+  "tasks": [/* array of Task objects */],
+  "constraints": { /* optional */ }
+}
 ```
 
-**employees.json** (Array of employees):
+**Response** (ScheduleResponse):
 ```json
-[
-  {
-    "employee_id": 65223,
-    "name": "John Doe",
-    "preferences": [3],
-    "certifications": [1,2,3,5],
-    "previous_vacations_60_days": 5, 
-    "approved_requests_60_days": 8,
-    "denied_requests_60_days": 2
+{
+  "assignments": [/* array of Assignment objects */],
+  "success": true,
+  "warnings": [],
+  "metadata": {
+    "quality_score": 0.92,
+    "plan_strategy": "validate-first"
   }
-]
+}
 ```
 
-### API Integration
-The system calls xAI's Grok API with prompts like:
-- "Given these employee preferences and task requirements, suggest fair assignments while ensuring no one exceeds vacation limits per [country] laws."
-Grok responds with reasoned assignments, which are then validated programmatically.
+### GET /
+Health check → API info
 
-## File Structure
+### GET /health
+Detailed status
+
+---
+
+## Data Models
+
+### Employee
+```python
+{
+  "employee_id": int,
+  "name": str,
+  "certifications": list[int],
+  "preferences": list[int],
+  "vacation_days_remaining": int,
+  "worked_nights": int,
+  "worked_weekends": int,
+  "worked_holidays": int
+  # ... additional tracking fields
+}
+```
+
+### Task
+```python
+{
+  "task_id": int,
+  "category": int,
+  "required_certifications": list[int],
+  "customer_capacity": int,
+  "required_capacity_per_staff": int,
+  "start": "ISO datetime",
+  "end": "ISO datetime"
+}
+```
+
+### Assignment
+```python
+{
+  "task_id": int,
+  "employee_id": int,
+  "employee_name": str,
+  "confidence": float  # 0.0-1.0
+}
+```
+
+---
+
+## System Workflow
+
+1. Validation
+2. Planning phase
+3. Execution (lawyer + scheduler tools)
+4. Review phase
+5. Curation & response
+
+Supports multiple strategies (validate-first, schedule-first, iterative).
+
+---
+
+## Testing
+
+```bash
+pytest                # All tests
+pytest -v             # Verbose
+pytest --cov=scheduler  # Coverage
+```
+
+---
+
+## Project Structure
 
 ```
-AI-Staff-Scheduler/
-├── README.md               # This file: Project overview, usage, and docs
-├── main.py                 # Entry point: CLI handler, orchestrates scheduling
+ai-staff-scheduler/
+├── data/                  # Sample JSON files
+├── logs/                  # Log output (if enabled)
 ├── scheduler/
 │   ├── __init__.py
-│   ├── core.py             # Core scheduling logic: Assignment algorithm, fairness checks
-│   ├── models.py           # Pydantic models for Employee, Task, Schedule
-│   ├── ai_agent.py         # xAI Grok API integration: Prompt generation, API calls
-│   ├── validators.py       # Input validation, certification matching, capacity calcs
-│   ├── laws.py             # Vacation law checker: Predefined rules or web query stubs
-│   └── utils.py            # Utilities: Date handling, JSON I/O, logging
-├── data/
-│   ├── sample_tasks.json   # Sample task input
-│   └── sample_employees.json # Sample employee input
+│   ├── executor.py
+│   ├── lawyer.py
+│   ├── logger.py
+│   ├── models.py
+│   ├── orchestrator.py
+│   ├── planner.py
+│   ├── reviewer.py
+│   ├── scheduler.py
+│   └── utils.py
 ├── tests/
-│   ├── __init__.py
-│   ├── test_core.py        # Unit tests for scheduling logic
-│   ├── test_ai_agent.py    # Tests for API integration (mocked)
-│   └── test_validators.py  # Tests for validation functions
-├── config/
-│   └── config.yaml         # Configuration: API endpoints, default params
-├── logs/                   # Runtime logs (generated)
-├── requirements.txt        # Python dependencies
-└── .env.example            # Example env file for API keys
+├── .env.example
+├── main.py                # FastAPI app
+├── requirements.txt
+└── README.md
 ```
 
-## Detailed Functions and Modules
+---
 
-### scheduler/core.py
-- `generate_schedule(tasks: List[Task], employees: List[Employee], date: str, country: str) -> Schedule`: Main function. Processes inputs, calls AI for suggestions, applies validations, and ensures fairness.
-- `calculate_fairness_score(employee: Employee) -> float`: Computes a score based on historical approvals/denials and vacations to prioritize underserved employees.
-- `assign_staff_to_tasks(ai_suggestions: Dict) -> Dict[str, List[str]]`: Maps task_ids to employee_ids, handling conflicts.
+## Troubleshooting
 
-### scheduler/ai_agent.py
-- `call_grok_api(prompt: str) -> str`: Sends prompt to xAI Grok API and returns response.
-- `build_prompt(tasks, employees, laws) -> str`: Constructs a detailed prompt for Grok, including all data and instructions for fair assignment.
-- Handles retries and error parsing for API calls.
+- **API key error** → Check `.env` and xAI console
+- **Connection issues** → Verify internet and API status
+- **Low quality** → Simplify constraints or add more qualified employees
+- Enable `LOG_LEVEL=DEBUG` for detailed traces
 
-### scheduler/validators.py
-- `validate_certifications(employee: Employee, task: Task) -> bool`: Checks if employee has required certs.
-- `check_capacity(task: Task, assigned_staff: int) -> bool`: Ensures staff count meets customer capacity / required_per_staff.
-- `validate_vacation_laws(country: str, employee: Employee) -> bool`: Verifies against laws (e.g., US: FMLA rules; EU: 4 weeks min).
+---
 
-### scheduler/laws.py
-- `get_vacation_rules(country: str) -> Dict`: Returns rules like min_days, accrual_rate. (Stub for expansion to web searches.)
-- Supports extensibility for dynamic checks via tools like web_search (if integrated).
+## Contributing
 
-### scheduler/models.py
-- `class Employee(BaseModel)`: Defines fields like id, preferences, certifications, etc.
-- `class Task(BaseModel)`: Defines fields like id, category, capacities, etc.
-- `class Schedule(BaseModel)`: Output structure with assignments and explanations.
+Contributions welcome!
 
-### scheduler/utils.py
-- `load_json(file_path: str) -> Dict`: Loads input files.
-- `save_schedule(schedule: Schedule, output_path: str)`: Saves output.
-- Logging setup with loguru for debug/info/error levels.
+1. Fork repo
+2. Create feature branch
+3. Add tests
+4. Run `pytest`
+5. Open Pull Request
 
-## Development and Contribution
+---
 
-- **Testing**: Use unittest for coverage. Mock API calls in tests to avoid real API usage.
-- **Extending AI**: Add more Grok prompts for scenarios like overstaffing or emergencies.
-- **Compliance Note**: Vacation laws are approximations; consult legal experts for production use.
-- **License**: MIT License. Contributions welcome via pull requests.
+## License
 
-## Roadmap
+MIT License — see [LICENSE](LICENSE)
 
-- Integrate calendar APIs (e.g., Google Calendar) for real-time scheduling.
-- Add GUI via Streamlit or Flask.
-- Support multi-day scheduling.
-- Enhance AI with multi-agent systems (e.g., one for fairness, one for optimization).
+---
 
-For questions or issues, open a GitHub issue. Happy scheduling!
+## Author
+
+**George Dryser**  
+
+---
