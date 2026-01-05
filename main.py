@@ -1,14 +1,12 @@
 import os
-from fastapi import FastAPI, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
+
 from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, status
 from loguru import logger
 
-
+from scheduler.logger import setup_logger
 from scheduler.models import ScheduleRequest, ScheduleResponse
 from scheduler.orchestrator import Orchestrator
-from scheduler.logger import setup_logger
-
 
 # Load environment
 load_dotenv()
@@ -31,15 +29,6 @@ app = FastAPI(
     title="AI Staff Scheduler",
     description="Agentic AI-powered staff scheduling system with xAI Grok",
     version="1.0.0"
-)
-
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
 )
 
 # Initialize orchestrator
